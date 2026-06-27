@@ -1,0 +1,7 @@
+{
+  "name": "vsql_nanoid",
+  "version": "0.0.1",
+  "description": "Short URL-safe random identifiers",
+  "author": "VillageSQL Contributors",
+  "license": "GPL-2.0"
+}

@@ -1,0 +1,68 @@
+INSTALL EXTENSION vsql_nanoid;
+# Default nanoid returns 21 characters
+SELECT LENGTH(vsql_nanoid.nanoid()) = 21 AS correct_length;
+correct_length
+1
+# Default nanoid uses only URL-safe characters
+SELECT vsql_nanoid.nanoid() REGEXP '^[A-Za-z0-9_-]{21}$' AS valid_chars;
+valid_chars
+1
+# Two nanoids are different (uniqueness)
+SELECT vsql_nanoid.nanoid() != vsql_nanoid.nanoid() AS is_unique;
+is_unique
+1
+# nanoid_with custom size
+SELECT LENGTH(vsql_nanoid.nanoid_with(10)) = 10 AS size_10;
+size_10
+1
+SELECT LENGTH(vsql_nanoid.nanoid_with(5)) = 5 AS size_5;
+size_5
+1
+SELECT LENGTH(vsql_nanoid.nanoid_with(50)) = 50 AS size_50;
+size_50
+1
+# nanoid_with custom alphabet
+SELECT vsql_nanoid.nanoid_with(8, '0123456789') REGEXP '^[0-9]{8}$' AS digits_only;
+digits_only
+1
+SELECT vsql_nanoid.nanoid_with(6, 'ABCDEF') REGEXP '^[A-F]{6}$' AS hex_upper;
+hex_upper
+1
+SELECT vsql_nanoid.nanoid_with(10, 'abc') REGEXP '^[abc]{10}$' AS three_chars;
+three_chars
+1
+# nanoid_with default alphabet when only size given
+SELECT vsql_nanoid.nanoid_with(15) REGEXP '^[A-Za-z0-9_-]{15}$' AS default_alpha;
+default_alpha
+1
+# NULL size returns NULL
+SELECT vsql_nanoid.nanoid_with(NULL) IS NULL AS null_size;
+null_size
+1
+# NULL alphabet returns NULL
+SELECT vsql_nanoid.nanoid_with(10, NULL) IS NULL AS null_alpha;
+null_alpha
+1
+# Size out of range produces error
+SELECT vsql_nanoid.nanoid_with(0);
+ERROR HY000: VDF error in function 'nanoid_with': size must be between 1 and 1024
+SELECT vsql_nanoid.nanoid_with(-5);
+ERROR HY000: VDF error in function 'nanoid_with': size must be between 1 and 1024
+SELECT vsql_nanoid.nanoid_with(1025);
+ERROR HY000: VDF error in function 'nanoid_with': size must be between 1 and 1024
+# Empty alphabet produces error
+SELECT vsql_nanoid.nanoid_with(10, '');
+ERROR HY000: VDF error in function 'nanoid_with': alphabet must be 1-255 characters
+# Can be used as a DEFAULT value
+CREATE TABLE docs (id TEXT, body TEXT);
+INSERT INTO docs (id, body) VALUES (vsql_nanoid.nanoid(), 'hello');
+INSERT INTO docs (id, body) VALUES (vsql_nanoid.nanoid(), 'world');
+SELECT LENGTH(id) = 21 AS correct_length, body FROM docs ORDER BY body;
+correct_length	body
+1	hello
+1	world
+SELECT COUNT(DISTINCT id) = 2 AS all_unique FROM docs;
+all_unique
+1
+DROP TABLE docs;
+UNINSTALL EXTENSION vsql_nanoid;
