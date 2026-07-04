@@ -26,10 +26,7 @@ static constexpr int kDefaultSize = 21;
 static constexpr std::string_view kDefaultAlphabet =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-";
 
-// Generates a nanoid string of the given length using the given alphabet.
-// Uses rejection sampling to avoid modulo bias: for an alphabet of size N,
-// we compute a mask that is the largest (2^k - 1) >= N, generate random
-// bytes, mask each byte, and keep it only if it falls within the alphabet.
+// Generates a nanoid using rejection sampling to avoid modulo bias.
 static bool generate_nanoid(std::string &out, int size,
                             std::string_view alphabet) {
   out.clear();
@@ -40,9 +37,6 @@ static bool generate_nanoid(std::string &out, int size,
   while (mask < alpha_len) mask <<= 1;
   mask -= 1;
 
-  // Generate random bytes in batches to reduce RAND_bytes calls.
-  // step estimates how many random bytes we need per character on average,
-  // accounting for rejection. Formula from the original nanoid source.
   int step = (int)(1.6 * static_cast<double>(mask * size) / alpha_len) + 1;
   unsigned char buf[256];
 
@@ -72,14 +66,11 @@ void vdf_nanoid(StringResult out) {
 }
 
 // nanoid_with(size INT, [alphabet TEXT]) -> TEXT
-// Prerun validates argument count and types.
 void nanoid_with_prerun(PrerunArgs args, PrerunResult out) {
   if (args.size() < 1 || args.size() > 2) {
     out.error("nanoid_with requires 1 or 2 arguments: (size INT [, alphabet TEXT])");
     return;
   }
-  // NULL literals arrive as VEF_TYPE_STRING in prerun, so accept both INT
-  // and STRING for the first argument. Runtime null check happens in the VDF.
   if (!args.type_at(0).is_int() && !args.type_at(0).is_str()) {
     out.error("nanoid_with: first argument must be INT");
     return;
