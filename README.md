@@ -14,7 +14,7 @@ Returns a 21-character random ID using the default alphabet (`A-Za-z0-9_-`), pro
 
 ```sql
 SELECT vsql_nanoid.nanoid();             -- 'V1StGXR8_Z5jdHi6B-myT'
-SELECT vsql_nanoid.nanoid();             -- 'k2L9xPqR_3nYmH7wJ-tQ'
+SELECT vsql_nanoid.nanoid();             -- 'k2L9xPqR_3nYmH7wJ-tQa'
 ```
 
 ### nanoid_with
