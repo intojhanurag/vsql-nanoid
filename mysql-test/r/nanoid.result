@@ -53,7 +53,7 @@ ERROR HY000: VDF error in function 'nanoid_with': size must be between 1 and 102
 # Empty alphabet produces error
 SELECT vsql_nanoid.nanoid_with(10, '');
 ERROR HY000: VDF error in function 'nanoid_with': alphabet must be 1-255 characters
-# Can be used as a DEFAULT value
+# Can be used at INSERT time to generate IDs
 CREATE TABLE docs (id TEXT, body TEXT);
 INSERT INTO docs (id, body) VALUES (vsql_nanoid.nanoid(), 'hello');
 INSERT INTO docs (id, body) VALUES (vsql_nanoid.nanoid(), 'world');

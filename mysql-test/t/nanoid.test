@@ -42,7 +42,7 @@ SELECT vsql_nanoid.nanoid_with(1025);
 --error 3200
 SELECT vsql_nanoid.nanoid_with(10, '');
 
---echo # Can be used as a DEFAULT value
+--echo # Can be used at INSERT time to generate IDs
 CREATE TABLE docs (id TEXT, body TEXT);
 INSERT INTO docs (id, body) VALUES (vsql_nanoid.nanoid(), 'hello');
 INSERT INTO docs (id, body) VALUES (vsql_nanoid.nanoid(), 'world');

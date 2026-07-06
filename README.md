@@ -31,17 +31,17 @@ SELECT vsql_nanoid.nanoid_with(8, '0123456789');      -- '48293017'
 SELECT vsql_nanoid.nanoid_with(6, 'ABCDEF');          -- 'BCAFDE'
 ```
 
-## Usage as DEFAULT
+## Usage at INSERT time
 
 ```sql
-CREATE TABLE docs (
-    id TEXT PRIMARY KEY DEFAULT (vsql_nanoid.nanoid()),
-    body TEXT
-);
+CREATE TABLE docs (id TEXT PRIMARY KEY, body TEXT);
 
-INSERT INTO docs (body) VALUES ('hello');
--- id is auto-generated: 'V1StGXR8_Z5jdHi6B-myT'
+INSERT INTO docs (id, body) VALUES (vsql_nanoid.nanoid(), 'hello');
+INSERT INTO docs (id, body) VALUES (vsql_nanoid.nanoid(), 'world');
 ```
+
+Note: `DEFAULT (nanoid())` is not supported because MySQL disallows
+non-deterministic functions in column defaults.
 
 ## Installation
 
