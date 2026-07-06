@@ -40,9 +40,6 @@ INSERT INTO docs (id, body) VALUES (vsql_nanoid.nanoid(), 'hello');
 INSERT INTO docs (id, body) VALUES (vsql_nanoid.nanoid(), 'world');
 ```
 
-Note: `DEFAULT (nanoid())` is not supported because MySQL disallows
-non-deterministic functions in column defaults.
-
 ## Installation
 
 ```sql
