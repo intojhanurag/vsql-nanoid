@@ -28,19 +28,19 @@ SELECT vsql_nanoid.nanoid_with(NULL) IS NULL AS null_size;
 --echo # NULL alphabet returns NULL
 SELECT vsql_nanoid.nanoid_with(10, NULL) IS NULL AS null_alpha;
 
---echo # Size out of range produces error
---error 3200
+--echo # Size out of range returns NULL with a warning
 SELECT vsql_nanoid.nanoid_with(0);
-
---error 3200
 SELECT vsql_nanoid.nanoid_with(-5);
-
---error 3200
 SELECT vsql_nanoid.nanoid_with(1025);
 
---echo # Empty alphabet produces error
---error 3200
+--echo # Empty alphabet returns NULL with a warning
 SELECT vsql_nanoid.nanoid_with(10, '');
+
+--echo # One bad row does not stop a query over many rows
+CREATE TABLE sizes (id INT PRIMARY KEY, n INT);
+INSERT INTO sizes VALUES (1, 5), (2, 0), (3, 8);
+SELECT id, LENGTH(vsql_nanoid.nanoid_with(n)) AS len FROM sizes ORDER BY id;
+DROP TABLE sizes;
 
 --echo # Can be used at INSERT time to generate IDs
 CREATE TABLE docs (id TEXT, body TEXT);

@@ -23,7 +23,7 @@ SELECT vsql_nanoid.nanoid();             -- 'k2L9xPqR_3nYmH7wJ-tQa'
 vsql_nanoid.nanoid_with(size INT [, alphabet TEXT]) -> TEXT
 ```
 
-Returns a random ID with custom length and optionally a custom alphabet.
+Returns a random ID with custom length and optionally a custom alphabet. The size must be 1 to 1024 and the alphabet 1 to 255 characters. Outside those limits it returns NULL with a warning.
 
 ```sql
 SELECT vsql_nanoid.nanoid_with(10);                  -- 'IRFa-VaY2b'

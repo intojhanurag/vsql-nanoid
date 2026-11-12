@@ -15,12 +15,26 @@
 
 #include <villagesql/vsql.h>
 
+#include <exception>
 #include <string>
 #include <string_view>
 
 #include <openssl/rand.h>
 
 using namespace vsql;
+
+// An exception that escapes a VDF aborts mysqld for every connection. Turn it
+// into a warning instead, so only this row returns NULL.
+template <typename Result, typename Body>
+static void guard(Result &out, Body &&body) {
+  try {
+    body();
+  } catch (const std::exception &e) {
+    out.warning(e.what());
+  } catch (...) {
+    out.warning("unexpected error");
+  }
+}
 
 static constexpr int kDefaultSize = 21;
 static constexpr std::string_view kDefaultAlphabet =
@@ -56,7 +70,7 @@ static bool generate_nanoid(std::string &out, int size,
 
 // nanoid() -> TEXT
 // Returns a 21-character random ID using the default alphabet.
-void vdf_nanoid(StringResult out) {
+static void nanoid(StringResult out) {
   std::string id;
   if (!generate_nanoid(id, kDefaultSize, kDefaultAlphabet)) {
     out.error("failed to generate random bytes");
@@ -78,7 +92,7 @@ void nanoid_with_prerun(PrerunArgs args, PrerunResult out) {
   out.request_buffer_size(1024);
 }
 
-void vdf_nanoid_with(VarArgs args, StringResult out) {
+static void nanoid_with(VarArgs args, StringResult out) {
   auto size_arg = args[0];
   if (size_arg.is_null()) {
     out.set_null();
@@ -87,7 +101,7 @@ void vdf_nanoid_with(VarArgs args, StringResult out) {
 
   int size = static_cast<int>(size_arg.as_int());
   if (size < 1 || size > 1024) {
-    out.error("size must be between 1 and 1024");
+    out.warning("size must be between 1 and 1024");
     return;
   }
 
@@ -100,7 +114,7 @@ void vdf_nanoid_with(VarArgs args, StringResult out) {
     }
     alphabet = alpha_arg.as_str();
     if (alphabet.empty() || alphabet.size() > 255) {
-      out.error("alphabet must be 1-255 characters");
+      out.warning("alphabet must be 1-255 characters");
       return;
     }
   }
@@ -111,6 +125,14 @@ void vdf_nanoid_with(VarArgs args, StringResult out) {
     return;
   }
   out.set(std::string_view(id));
+}
+
+void vdf_nanoid(StringResult out) {
+  guard(out, [&] { nanoid(out); });
+}
+
+void vdf_nanoid_with(VarArgs args, StringResult out) {
+  guard(out, [&] { nanoid_with(args, out); });
 }
 
 VEF_GENERATE_ENTRY_POINTS(
