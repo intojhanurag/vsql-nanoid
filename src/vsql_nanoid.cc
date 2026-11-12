@@ -101,7 +101,7 @@ static void nanoid_with(VarArgs args, StringResult out) {
 
   int size = static_cast<int>(size_arg.as_int());
   if (size < 1 || size > 1024) {
-    out.error("size must be between 1 and 1024");
+    out.warning("size must be between 1 and 1024");
     return;
   }
 
@@ -114,7 +114,7 @@ static void nanoid_with(VarArgs args, StringResult out) {
     }
     alphabet = alpha_arg.as_str();
     if (alphabet.empty() || alphabet.size() > 255) {
-      out.error("alphabet must be 1-255 characters");
+      out.warning("alphabet must be 1-255 characters");
       return;
     }
   }

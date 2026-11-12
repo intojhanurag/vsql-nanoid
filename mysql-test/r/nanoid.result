@@ -43,16 +43,39 @@ null_size
 SELECT vsql_nanoid.nanoid_with(10, NULL) IS NULL AS null_alpha;
 null_alpha
 1
-# Size out of range produces error
+# Size out of range returns NULL with a warning
 SELECT vsql_nanoid.nanoid_with(0);
-ERROR HY000: VDF error in function 'nanoid_with': size must be between 1 and 1024
+vsql_nanoid.nanoid_with(0)
+NULL
+Warnings:
+Warning	3200	VDF error in function 'nanoid_with': size must be between 1 and 1024
 SELECT vsql_nanoid.nanoid_with(-5);
-ERROR HY000: VDF error in function 'nanoid_with': size must be between 1 and 1024
+vsql_nanoid.nanoid_with(-5)
+NULL
+Warnings:
+Warning	3200	VDF error in function 'nanoid_with': size must be between 1 and 1024
 SELECT vsql_nanoid.nanoid_with(1025);
-ERROR HY000: VDF error in function 'nanoid_with': size must be between 1 and 1024
-# Empty alphabet produces error
+vsql_nanoid.nanoid_with(1025)
+NULL
+Warnings:
+Warning	3200	VDF error in function 'nanoid_with': size must be between 1 and 1024
+# Empty alphabet returns NULL with a warning
 SELECT vsql_nanoid.nanoid_with(10, '');
-ERROR HY000: VDF error in function 'nanoid_with': alphabet must be 1-255 characters
+vsql_nanoid.nanoid_with(10, '')
+NULL
+Warnings:
+Warning	3200	VDF error in function 'nanoid_with': alphabet must be 1-255 characters
+# One bad row does not stop a query over many rows
+CREATE TABLE sizes (id INT PRIMARY KEY, n INT);
+INSERT INTO sizes VALUES (1, 5), (2, 0), (3, 8);
+SELECT id, LENGTH(vsql_nanoid.nanoid_with(n)) AS len FROM sizes ORDER BY id;
+id	len
+1	5
+2	NULL
+3	8
+Warnings:
+Warning	3200	VDF error in function 'nanoid_with': size must be between 1 and 1024
+DROP TABLE sizes;
 # Can be used at INSERT time to generate IDs
 CREATE TABLE docs (id TEXT, body TEXT);
 INSERT INTO docs (id, body) VALUES (vsql_nanoid.nanoid(), 'hello');
